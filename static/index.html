@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapEdge AI Assistant | Snapdragon®-Powered HP PCs</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js for NPU/CPU live telemetry -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --snapdragon-red: #e11425;
+            --snapdragon-dark: #121417;
+            --card-bg: #1c2026;
+            --text-muted: #8e9aab;
+        }
+        body {
+            background-color: #0d1015;
+            color: #e6edf3;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+        }
+        .navbar-brand-snap {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #fff;
+        }
+        .snap-badge {
+            background: linear-gradient(135deg, #e11425, #ff4154);
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .nav-tabs {
+            border-bottom: 2px solid #282f3a;
+        }
+        .nav-tabs .nav-link {
+            color: var(--text-muted);
+            border: none;
+            padding: 12px 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav-tabs .nav-link:hover {
+            color: #fff;
+            border-bottom: 2px solid #6c798c;
+        }
+        .nav-tabs .nav-link.active {
+            color: #fff;
+            background-color: transparent;
+            border-bottom: 3px solid var(--snapdragon-red);
+        }
+        .snap-card {
+            background-color: var(--card-bg);
+            border: 1px solid #282f3a;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .snap-card-header {
+            border-bottom: 1px solid #282f3a;
+            padding: 16px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn-snap {
+            background: linear-gradient(135deg, #e11425, #c00d1c);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-snap:hover {
+            background: linear-gradient(135deg, #f31a2c, #d31121);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(225, 20, 37, 0.4);
+        }
+        .stat-badge {
+            background-color: #232a35;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #364152;
+            font-size: 0.85rem;
+        }
+        .timeline-item {
+            border-left: 3px solid var(--snapdragon-red);
+            padding-left: 16px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 4px;
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background-color: var(--snapdragon-red);
+        }
+        .travel-pill {
+            background: rgba(255, 193, 7, 0.15);
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            color: #ffc107;
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 6px 0;
+        }
+        .key-badge {
+            background: #2b3340;
+            color: #9fb2c8;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #434f62;
+            margin-left: 4px;
+        }
+        .benchmark-card {
+            background: #15181e;
+            border: 1px solid #282f3a;
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Navbar -->
+    <nav class="navbar navbar-dark bg-dark border-bottom border-secondary px-4 py-3">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <i class="fa-solid fa-microchip text-danger fa-2x"></i>
+                <div>
+                    <span class="navbar-brand-snap fs-4">SnapEdge AI Assistant</span>
+                    <span class="d-block text-secondary small">Snapdragon® AI Lab Build & Present Challenge | HP OmniBook Series</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge bg-success py-2 px-3" title="Zero cloud APIs, zero external data leakage">
+                    <i class="fa-solid fa-shield-halved me-1"></i> Offline Mode: 100% On-Device
+                </span>
+                <span class="snap-badge" id="npu-badge"><i class="fa-solid fa-bolt me-1"></i> Hexagon™ NPU (45 TOPS)</span>
+                <span class="stat-badge text-light small" id="provider-badge"><i class="fa-solid fa-circle-check text-success me-1"></i> QNN Execution Provider</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid px-4 py-4">
+
+        <!-- Navigation Tabs with Hotkeys -->
+        <ul class="nav nav-tabs mb-4" id="mainTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="summarizer-tab" data-bs-toggle="tab" data-bs-target="#summarizer-view" type="button" role="tab">
+                    <i class="fa-solid fa-microphone-lines me-2 text-danger"></i>Meeting Summarizer <span class="key-badge">Alt+1</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="copilot-tab" data-bs-toggle="tab" data-bs-target="#copilot-view" type="button" role="tab">
+                    <i class="fa-solid fa-wand-magic-sparkles me-2 text-info"></i>Clipboard Copilot <span class="key-badge">Alt+2</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule-view" type="button" role="tab">
+                    <i class="fa-solid fa-calendar-days me-2 text-warning"></i>AHEAD Schedule & Ripple Matrix <span class="key-badge">Alt+3</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="telemetry-tab" data-bs-toggle="tab" data-bs-target="#telemetry-view" type="button" role="tab">
+                    <i class="fa-solid fa-chart-line me-2 text-success"></i>NPU Benchmarks & Telemetry <span class="key-badge">Alt+4</span>
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content Views -->
+        <div class="tab-content" id="mainTabContent">
+
+            <!-- ==================== TAB 1: MEETING SUMMARIZER ==================== -->
+            <div class="tab-pane fade show active" id="summarizer-view" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="snap-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0"><i class="fa-solid fa-file-audio me-2 text-danger"></i>Meeting Audio Ingestion</h5>
+                                <span class="badge bg-secondary">Whisper-tiny (Qualcomm AI Hub)</span>
+                            </div>
+                            <p class="text-secondary small">Transcribe recordings on-device using quantized Whisper-tiny via Qualcomm QNN SDK. 100% offline with zero cloud latency.</p>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">Select Demo Recording Preset:</label>
+                                <select class="form-select bg-dark text-light border-secondary" id="meeting-preset-select">
+                                    <option value="board_sync">Quarterly Product & Client Strategy Sync (Overrun Conflict)</option>
+                                    <option value="site_relocation">Client Emergency Relocation Huddle (Travel Buffer Conflict)</option>
+                                    <option value="custom">Custom Audio / Text Input</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">Transcript / Audio Notes:</label>
+                                <textarea class="form-control bg-dark text-light border-secondary" id="meeting-text-input" rows="6" placeholder="Paste or type meeting notes..."></textarea>
+                            </div>
+
+                            <button class="btn btn-snap w-100 py-2" id="btn-run-summary">
+                                <i class="fa-solid fa-play me-2"></i>Summarize & Check Schedule (NPU)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="snap-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fa-solid fa-clipboard-check me-2 text-success"></i>Executive Intelligence Output</h5>
+                                <span class="badge bg-secondary" id="summary-perf-badge"><i class="fa-regular fa-clock me-1"></i> Ready</span>
+                            </div>
+
+                            <!-- Conflict Alert Box -->
+                            <div id="conflict-alert-box" class="alert alert-warning d-none" role="alert">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation text-warning fs-4"></i>
+                                        <strong>AHEAD Schedule Conflict Triggered!</strong>
+                                    </div>
+                                    <!-- Closed Loop Button -->
+                                    <button class="btn btn-dark btn-sm border-warning text-warning fw-bold" id="btn-trigger-auto-resolve">
+                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Auto-Resolve & Draft Email (NPU)
+                                    </button>
+                                </div>
+                                <p class="small mb-2" id="conflict-alert-desc"></p>
+                                <div id="conflict-shifts-list" class="small"></div>
+                            </div>
+
+                            <!-- Closed-Loop Resolution Box -->
+                            <div id="closed-loop-box" class="card bg-black border-warning p-3 mb-3 d-none">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong class="text-warning small"><i class="fa-solid fa-robot me-1"></i>Closed-Loop Auto-Resolution (Phi-3-mini on Hexagon NPU)</strong>
+                                    <button class="btn btn-success btn-sm" id="btn-apply-calendar"><i class="fa-solid fa-calendar-check me-1"></i>Apply to Active Calendar</button>
+                                </div>
+                                <pre class="bg-dark p-2 rounded text-light small mb-2" style="white-space: pre-wrap; max-height: 180px; overflow-y: auto;" id="auto-resolve-email"></pre>
+                                <div class="small text-secondary" id="auto-resolve-stats"></div>
+                            </div>
+
+                            <!-- Acoustic Speaker Diarization Turns -->
+                            <div class="d-flex justify-content-between align-items-center mt-3 mb-2">
+                                <h6 class="text-secondary small fw-bold text-uppercase mb-0">
+                                    <i class="fa-solid fa-users text-info me-1"></i>Acoustic Speaker Diarization (NPU Clustered):
+                                </h6>
+                                <span class="badge bg-secondary" style="font-size: 0.65rem;" id="diarization-model-badge">TitaNet-ONNX + HVX Clustering</span>
+                            </div>
+                            <div id="diarization-turns-container" class="mb-3 p-2 bg-black rounded border border-secondary" style="max-height: 200px; overflow-y: auto;">
+                                <div class="text-secondary small text-center py-3">Run summarizer to view speaker turns with timecodes and neural voice attribution.</div>
+                            </div>
+
+                            <!-- Summary Points -->
+                            <h6 class="text-secondary small fw-bold text-uppercase mt-3">Key Decisions & Summary Points:</h6>
+                            <ul class="list-group list-group-flush bg-transparent mb-3" id="summary-points-list">
+                                <li class="list-group-item bg-transparent text-secondary small">Run the summarizer to view extracted decisions.</li>
+                            </ul>
+
+                            <!-- Action Items -->
+                            <h6 class="text-secondary small fw-bold text-uppercase mt-3">Action Items & Deliverables:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped small align-middle mb-0" id="action-items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Task</th>
+                                            <th>Owner</th>
+                                            <th>Priority</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="action-items-body">
+                                        <tr><td colspan="3" class="text-secondary">No action items extracted yet.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 2: CLIPBOARD COPILOT ==================== -->
+            <div class="tab-pane fade" id="copilot-view" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="snap-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0"><i class="fa-solid fa-paste me-2 text-info"></i>Contextual Clipboard Copilot</h5>
+                                <span class="badge bg-secondary">Phi-3-mini INT4 (Qualcomm AI Hub)</span>
+                            </div>
+                            <p class="text-secondary small">Runs Phi-3-mini locally on Snapdragon NPU to assist with rewriting, code explanations, or schedule shifts with zero cloud leakage.</p>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">Quick Presets:</label>
+                                <div class="btn-group w-100 mb-2">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="setCopilotPrompt('Stuck at client site, push meeting_001 by 30 minutes', 'schedule')">Reschedule Meeting</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="setCopilotPrompt('Hi team, here is the recap of the product launch milestone and next deliverables.', 'email')">Draft Email</button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="setCopilotPrompt('def calculate_travel_transit_buffer(origin, dest):', 'code')">Code Gen</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small fw-bold">Input Text / Clipboard Prompt:</label>
+                                <textarea class="form-control bg-dark text-light border-secondary" id="copilot-input" rows="6" placeholder="Paste or type clipboard text here..."></textarea>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-snap flex-grow-1" id="btn-run-copilot">
+                                    <i class="fa-solid fa-microchip me-2"></i>Execute on NPU
+                                </button>
+                                <button class="btn btn-outline-secondary" onclick="document.getElementById('copilot-input').value=''">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="snap-card p-4 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fa-solid fa-terminal me-2 text-info"></i>Copilot Response</h5>
+                                <button class="btn btn-outline-light btn-sm" id="btn-copy-copilot"><i class="fa-solid fa-copy me-1"></i>Copy</button>
+                            </div>
+                            <pre class="bg-dark p-3 rounded border border-secondary text-light small" style="min-height: 250px; white-space: pre-wrap;" id="copilot-output">Copilot output will appear here...</pre>
+                            <div class="small text-secondary mt-2" id="copilot-stats">Model: Phi-3-mini-4k-instruct | Snapdragon NPU Accelerated</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 3: AHEAD SCHEDULE & RIPPLE MATRIX ==================== -->
+            <div class="tab-pane fade" id="schedule-view" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="snap-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fa-solid fa-calendar-day me-2 text-warning"></i>Active Workday Schedule</h5>
+                                <button class="btn btn-outline-secondary btn-sm" id="btn-reset-schedule"><i class="fa-solid fa-rotate-left me-1"></i>Reset</button>
+                            </div>
+                            <p class="text-secondary small">Current schedule and travel constraints enforced between venues.</p>
+
+                            <div id="schedule-timeline" class="mt-3">
+                                <!-- Dynamically populated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-7">
+                        <div class="snap-card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0"><i class="fa-solid fa-brain me-2 text-danger"></i>AHEAD "What-If" Cascading Simulator</h5>
+                                <span class="badge bg-secondary">All-MiniLM-L6-v2 (Qualcomm AI Hub)</span>
+                            </div>
+                            <p class="text-secondary small">Simulate schedule shifts with physical travel buffer checks and cycle-prevented multi-hop ripple resolution.</p>
+
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control bg-dark text-light border-secondary" id="sim-prompt-input" placeholder="e.g. Delay meeting_001 by 45 minutes">
+                                <button class="btn btn-snap" id="btn-run-sim"><i class="fa-solid fa-bolt me-1"></i>Simulate Ripple</button>
+                            </div>
+
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="setSimPrompt('Delay meeting_001 by 45 minutes')">Overlap Delay (+45m)</button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="setSimPrompt('Move meeting_001 to 11:15 at HQ_North')">Travel Conflict (+30m Transit)</button>
+                            </div>
+
+                            <!-- Interactive Conflict Tree SVG Visualizer -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="text-secondary small fw-bold text-uppercase mb-0">
+                                        <i class="fa-solid fa-diagram-project me-1 text-danger"></i>Interactive Conflict Tree (O(V+E) Visual DAG)
+                                    </h6>
+                                    <div class="d-flex gap-2">
+                                        <span class="badge bg-danger small" style="font-size: 0.65rem;">Trigger / Delay</span>
+                                        <span class="badge bg-warning text-dark small" style="font-size: 0.65rem;">Transit Breach</span>
+                                        <span class="badge bg-info text-dark small" style="font-size: 0.65rem;">Cascaded Shift</span>
+                                        <span class="badge bg-success small" style="font-size: 0.65rem;">Auto-Resolved</span>
+                                    </div>
+                                </div>
+                                <div id="conflict-tree-container" class="bg-black p-2 rounded border border-secondary" style="min-height: 170px; overflow-x: auto; position: relative;">
+                                    <div class="text-secondary small text-center py-4">
+                                        <i class="fa-solid fa-circle-nodes fa-2x mb-2 text-muted"></i>
+                                        <div>Run a simulation above to render the animated causal DAG.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Simulation Output Box -->
+                            <div class="bg-dark p-3 rounded border border-secondary" id="sim-results-box">
+                                <span class="text-secondary small">Enter a prompt above to see cascading downstream shifts.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 4: NPU BENCHMARKS & HARDWARE TELEMETRY ==================== -->
+            <div class="tab-pane fade" id="telemetry-view" role="tabpanel">
+                
+                <!-- Live Benchmarking Strip -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="benchmark-card">
+                            <div class="text-secondary small">Time-To-First-Token (TTFT)</div>
+                            <div class="d-flex justify-content-between align-items-baseline mt-1">
+                                <h4 class="text-danger fw-bold mb-0" id="bench-ttft-npu">18.5 ms</h4>
+                                <span class="badge bg-success small">4.5x Faster</span>
+                            </div>
+                            <div class="text-secondary small mt-1">CPU Baseline: <span id="bench-ttft-cpu">84.2 ms</span></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="benchmark-card">
+                            <div class="text-secondary small">Generation Throughput</div>
+                            <div class="d-flex justify-content-between align-items-baseline mt-1">
+                                <h4 class="text-danger fw-bold mb-0" id="bench-throughput-npu">48.2 tok/s</h4>
+                                <span class="badge bg-success small">3.3x Throughput</span>
+                            </div>
+                            <div class="text-secondary small mt-1">CPU Baseline: <span id="bench-throughput-cpu">14.6 tok/s</span></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="benchmark-card">
+                            <div class="text-secondary small">Inference Latency</div>
+                            <div class="d-flex justify-content-between align-items-baseline mt-1">
+                                <h4 class="text-danger fw-bold mb-0" id="bench-latency-npu">22.4 ms</h4>
+                                <span class="badge bg-success small">6.6x Speedup</span>
+                            </div>
+                            <div class="text-secondary small mt-1">CPU Baseline: <span id="bench-latency-cpu">148.0 ms</span></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="benchmark-card">
+                            <div class="text-secondary small">Power Draw & Energy</div>
+                            <div class="d-flex justify-content-between align-items-baseline mt-1">
+                                <h4 class="text-success fw-bold mb-0" id="bench-power-npu">4.5 W</h4>
+                                <span class="badge bg-success small">6.8x Efficient</span>
+                            </div>
+                            <div class="text-secondary small mt-1">CPU Baseline: <span id="bench-power-cpu">30.6 W</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gauges Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="snap-card p-4 text-center">
+                            <i class="fa-solid fa-bolt text-danger fa-2x mb-2"></i>
+                            <h6 class="text-secondary small text-uppercase">Hexagon NPU Load</h6>
+                            <h2 class="text-light fw-bold mb-1" id="metric-npu">0%</h2>
+                            <span class="badge bg-danger small">45 TOPS Hexagon Engine</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="snap-card p-4 text-center">
+                            <i class="fa-solid fa-microchip text-info fa-2x mb-2"></i>
+                            <h6 class="text-secondary small text-uppercase">Host CPU Load</h6>
+                            <h2 class="text-light fw-bold mb-1" id="metric-cpu">0%</h2>
+                            <span class="badge bg-secondary small">Offloaded Execution</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="snap-card p-4 text-center">
+                            <i class="fa-solid fa-memory text-warning fa-2x mb-2"></i>
+                            <h6 class="text-secondary small text-uppercase">Unified Memory (RAM)</h6>
+                            <h2 class="text-light fw-bold mb-1" id="metric-ram">0 GB</h2>
+                            <span class="badge bg-secondary small" id="metric-ram-pct">0% Used</span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="snap-card p-4 text-center">
+                            <i class="fa-solid fa-battery-half text-success fa-2x mb-2"></i>
+                            <h6 class="text-secondary small text-uppercase">Battery Efficiency</h6>
+                            <h2 class="text-success fw-bold mb-1" id="metric-power">6.8x</h2>
+                            <span class="badge bg-success small">All-Day HP PC Battery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Snapdragon Battery & Thermal Budgeting Governor -->
+                <div class="snap-card p-4 mb-4 border border-success-subtle">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                            <h5 class="mb-1 text-light">
+                                <i class="fa-solid fa-leaf text-success me-2"></i>Snapdragon Battery & Thermal Budgeting Governor
+                            </h5>
+                            <p class="text-secondary small mb-0">Hardware-aware energy management optimized for Snapdragon-powered HP PCs.</p>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary" id="gov-power-source-badge"><i class="fa-solid fa-plug me-1"></i>AC Power Active</span>
+                            <span class="badge bg-success" id="gov-active-mode-badge">Performance Mode</span>
+                        </div>
+                    </div>
+
+                    <!-- Governor Metrics Row -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-3">
+                            <div class="p-3 bg-dark rounded border border-secondary text-center">
+                                <div class="text-secondary small">Power Savings (vs CPU)</div>
+                                <h4 class="text-success fw-bold mb-0 mt-1" id="gov-watts-saved">0.0 W</h4>
+                                <div class="text-secondary small" id="gov-watts-desc">AC Uncapped Mode</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-dark rounded border border-secondary text-center">
+                                <div class="text-secondary small">Battery Life Extension</div>
+                                <h4 class="text-info fw-bold mb-0 mt-1" id="gov-extension-hrs">+0.0 hrs</h4>
+                                <div class="text-secondary small" id="gov-extension-desc">No Throttling Needed</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-dark rounded border border-secondary text-center">
+                                <div class="text-secondary small">Thermal Profile</div>
+                                <h4 class="text-warning fw-bold mb-0 mt-1" id="gov-thermal-status">Cool (32.4°C)</h4>
+                                <div class="text-secondary small">Fanless Acoustic Silence</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 bg-dark rounded border border-secondary text-center">
+                                <div class="text-secondary small">Telemetry Polling Rate</div>
+                                <h4 class="text-light fw-bold mb-0 mt-1" id="gov-polling-rate">2.0 sec</h4>
+                                <div class="text-secondary small" id="gov-quant-status">Hardware INT4 Ready</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Governor Interactive Controls -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top border-secondary">
+                        <div class="text-secondary small" id="gov-mode-description">
+                            <i class="fa-solid fa-info-circle me-1"></i>Uncapped 45 TOPS Hexagon burst | 2s continuous background schedule watch
+                        </div>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button type="button" class="btn btn-outline-secondary active" id="btn-gov-auto" onclick="setGovernorModeUI('auto')">Auto (Sensor)</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btn-gov-eco" onclick="setGovernorModeUI('eco')">Snapdragon Eco-Governor</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btn-gov-ultra" onclick="setGovernorModeUI('ultra_saver')">Ultra Saver</button>
+                            <button type="button" class="btn btn-outline-secondary" id="btn-gov-perf" onclick="setGovernorModeUI('performance')">Performance</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Model Catalog Table -->
+                <div class="row g-4">
+                    <div class="col-lg-7">
+                        <div class="snap-card p-4">
+                            <h6 class="mb-3"><i class="fa-solid fa-wave-square me-2 text-danger"></i>Live Hardware Telemetry Stream (Chart.js)</h6>
+                            <canvas id="telemetryChart" height="130"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-5">
+                        <div class="snap-card p-4 h-100">
+                            <h6 class="mb-3"><i class="fa-solid fa-cubes text-danger me-2"></i>Qualcomm AI Hub Model Mapping</h6>
+                            <div class="table-responsive">
+                                <table class="table table-dark table-striped small align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Feature</th>
+                                            <th>Qualcomm AI Hub Model</th>
+                                            <th>Format</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ai-hub-models-body">
+                                        <tr>
+                                            <td>Transcription (Tab 1)</td>
+                                            <td><span class="text-light fw-bold">Whisper-tiny</span></td>
+                                            <td><span class="badge bg-danger">QNN ONNX</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Speaker Diarization (Tab 1)</td>
+                                            <td><span class="text-light fw-bold">TitaNet-ONNX</span></td>
+                                            <td><span class="badge bg-danger">INT8 HVX</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Copilot &amp; Resolv (Tab 2)</td>
+                                            <td><span class="text-light fw-bold">Phi-3-mini-4k</span></td>
+                                            <td><span class="badge bg-danger">INT4 QNN</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>AHEAD Intent (Tab 3)</td>
+                                            <td><span class="text-light fw-bold">All-MiniLM-L6-v2</span></td>
+                                            <td><span class="badge bg-danger">INT8 QNN</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="small text-secondary mt-3">
+                                Total Inferences Executed: <strong class="text-light" id="metric-inferences">0</strong> | Privacy: <strong>100% Offline Edge</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SnapEdge App Logic -->
+    <script src="/app.js"></script>
+</body>
+</html>

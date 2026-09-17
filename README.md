@@ -1,6 +1,11 @@
-# SnapEdge AI Assistant & AHEAD-AI Engine
-**Snapdragon® AI Lab Build & Present Challenge**  
-*Optimized for Snapdragon-Powered HP PCs (HP OmniBook Series with Qualcomm® Hexagon™ 45 TOPS NPU)*
+﻿# SnapEdge AI Assistant & AHEAD-AI Engine
+**SnapdragonÂ® AI Lab Build & Present Challenge**  
+*Optimized for Snapdragon-Powered HP PCs (HP OmniBook Series with QualcommÂ® Hexagonâ„¢ 45 TOPS NPU)*
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/narasimhuluww2/snapdragon-)
+**Live Demo:** [https://snapedge-ai-assistant.onrender.com](https://snapedge-ai-assistant.onrender.com)
+*(Note: Hosted on cloud; NPU hardware telemetry is mocked, but AI features work fully.)*
+
 
 SnapEdge AI Assistant is an on-device, privacy-first productivity suite and workflow automation platform that combines **Qualcomm AI Hub neural models** (Whisper-tiny, Phi-3-mini, MiniLM) with a **deterministic graph-traversal simulation engine (AHEAD)**. It features a modern single-page web dashboard with live Snapdragon hardware & NPU telemetry, smart meeting summarization with automated conflict detection, a contextual clipboard copilot, multi-hop cascading ripple schedule simulation with an interactive SVG Conflict Tree, closed-loop 1-click auto-resolution, an intelligent Snapdragon Battery & Thermal Budgeting Governor, and a floating native desktop companion HUD.
 
@@ -42,7 +47,7 @@ SnapEdge AI Assistant is an on-device, privacy-first productivity suite and work
 | **Generation Throughput** | **48.2 tok/sec** | 14.6 tok/sec | **3.3x Higher** |
 | **Average Task Latency** | **22.4 ms** | 148.0 ms | **6.6x Speedup** |
 | **Active Power Consumption** | **4.5 W** | 30.6 W | **6.8x Lower Power** |
-| **Host CPU Spike during Inference**| **0% (Offloaded)** | 85%–100% (High Load)| **Cool & Silent** |
+| **Host CPU Spike during Inference**| **0% (Offloaded)** | 85%â€“100% (High Load)| **Cool & Silent** |
 
 ---
 
@@ -50,31 +55,31 @@ SnapEdge AI Assistant is an on-device, privacy-first productivity suite and work
 
 ```
 blissful-hypatia/
-├── run.ps1                      # One-click PowerShell launcher script (with -WithWidget switch)
-├── run.bat                      # One-click Windows Batch launcher script (with --widget switch)
-├── desktop_widget.py            # Floating native desktop companion HUD (tkinter)
-├── pyproject.toml               # Dependencies (FastAPI, Uvicorn, ONNX Runtime, psutil, pytest)
-├── demo.py                      # Interactive terminal CLI demonstration
-├── PROJECT_REPORT.md            # Comprehensive technical design report
-├── SUBMISSION_PROPOSAL.md       # Official submission proposal & video storyboard
-├── snapedge/
-│   ├── app.py                   # FastAPI backend server & static asset host
-│   └── services/
-│       ├── summarizer.py        # Meeting summarizer & conflict detection service
-│       ├── copilot.py           # Contextual clipboard copilot service
-│       └── telemetry.py         # Hardware monitor & Snapdragon Eco-Governor
-├── engine/
-│   ├── models.py                # Core dataclasses (Event, TravelBuffer, RippleImpact)
-│   ├── simulator.py             # Recursive cascading ripple simulator with cycle prevention
-│   └── ai_parser.py             # Qualcomm AI Hub ONNX interface & NLP entity extraction
-├── static/
-│   ├── index.html               # Responsive Bootstrap 5 dashboard with Conflict Tree & Governor
-│   └── app.js                   # Chart.js telemetry stream, SVG DAG renderer & API hooks
-└── tests/
-    ├── test_ripple.py           # Unit tests for direct overlap & travel buffers
-    ├── test_simulator.py        # Tests for multi-hop cascade & cycle prevention
-    ├── test_ai_parser.py        # Tests for Qualcomm AI parser
-    └── test_snapedge_api.py     # End-to-end tests for FastAPI REST endpoints & Governor
+â”œâ”€â”€ run.ps1                      # One-click PowerShell launcher script (with -WithWidget switch)
+â”œâ”€â”€ run.bat                      # One-click Windows Batch launcher script (with --widget switch)
+â”œâ”€â”€ desktop_widget.py            # Floating native desktop companion HUD (tkinter)
+â”œâ”€â”€ pyproject.toml               # Dependencies (FastAPI, Uvicorn, ONNX Runtime, psutil, pytest)
+â”œâ”€â”€ demo.py                      # Interactive terminal CLI demonstration
+â”œâ”€â”€ PROJECT_REPORT.md            # Comprehensive technical design report
+â”œâ”€â”€ SUBMISSION_PROPOSAL.md       # Official submission proposal & video storyboard
+â”œâ”€â”€ snapedge/
+â”‚   â”œâ”€â”€ app.py                   # FastAPI backend server & static asset host
+â”‚   â””â”€â”€ services/
+â”‚       â”œâ”€â”€ summarizer.py        # Meeting summarizer & conflict detection service
+â”‚       â”œâ”€â”€ copilot.py           # Contextual clipboard copilot service
+â”‚       â””â”€â”€ telemetry.py         # Hardware monitor & Snapdragon Eco-Governor
+â”œâ”€â”€ engine/
+â”‚   â”œâ”€â”€ models.py                # Core dataclasses (Event, TravelBuffer, RippleImpact)
+â”‚   â”œâ”€â”€ simulator.py             # Recursive cascading ripple simulator with cycle prevention
+â”‚   â””â”€â”€ ai_parser.py             # Qualcomm AI Hub ONNX interface & NLP entity extraction
+â”œâ”€â”€ static/
+â”‚   â”œâ”€â”€ index.html               # Responsive Bootstrap 5 dashboard with Conflict Tree & Governor
+â”‚   â””â”€â”€ app.js                   # Chart.js telemetry stream, SVG DAG renderer & API hooks
+â””â”€â”€ tests/
+    â”œâ”€â”€ test_ripple.py           # Unit tests for direct overlap & travel buffers
+    â”œâ”€â”€ test_simulator.py        # Tests for multi-hop cascade & cycle prevention
+    â”œâ”€â”€ test_ai_parser.py        # Tests for Qualcomm AI parser
+    â””â”€â”€ test_snapedge_api.py     # End-to-end tests for FastAPI REST endpoints & Governor
 ```
 
 ---
@@ -128,3 +133,4 @@ uv run python demo.py "Delay meeting_001 by 45 minutes"
 uv run pytest -v
 ```
 *(All 26 unit tests pass across models, ripple simulator, AI parser, governor, and FastAPI endpoints).*
+

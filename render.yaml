@@ -1,0 +1,6 @@
+﻿services:
+  - type: web
+    name: snapedge-ai-assistant
+    env: docker
+    plan: free
+    branch: main

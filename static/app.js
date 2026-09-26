@@ -1,5 +1,5 @@
-// SnapEdge AI Assistant - Frontend Client Logic
-// Optimized for Snapdragon®-Powered HP PCs (Qualcomm® Hexagon™ NPU)
+﻿// SnapEdge AI Assistant - Frontend Client Logic
+// Optimized for SnapdragonÂ®-Powered HP PCs (QualcommÂ® Hexagonâ„¢ NPU)
 
 const PRESETS = {
     board_sync: "Good morning team. We reviewed the Q3 enterprise rollout. Sarah confirmed that the backend migration is on track for Thursday. However, our executive board review is running over. We decided to delay meeting_001 by 45 minutes to finish questions. Narasimha will finalize the client deliverable deck by Friday 5 PM. Also, please note site_visit_001 remains scheduled at Client_Campus.",
@@ -335,7 +335,7 @@ async function loadSchedule() {
                 if (matchingBuffer) {
                     const tbDiv = document.createElement("div");
                     tbDiv.className = "travel-pill";
-                    tbDiv.innerHTML = `<i class="fa-solid fa-car-side me-1"></i> Transit Buffer: ${matchingBuffer.from_location} → ${matchingBuffer.to_location} (${matchingBuffer.total_required_mins} min required)`;
+                    tbDiv.innerHTML = `<i class="fa-solid fa-car-side me-1"></i> Transit Buffer: ${matchingBuffer.from_location} â†’ ${matchingBuffer.to_location} (${matchingBuffer.total_required_mins} min required)`;
                     timeline.appendChild(tbDiv);
                 }
             }
@@ -386,7 +386,7 @@ async function runSimulation() {
                     <div class="p-2 mb-2 bg-black rounded border border-secondary small">
                         <div class="d-flex justify-content-between">
                             <strong>${i + 1}. [${s.event_id}]</strong>
-                            <span class="text-warning">${s.original_window} ➔ ${s.new_window} (+${s.delay_mins}m)</span>
+                            <span class="text-warning">${s.original_window} âž” ${s.new_window} (+${s.delay_mins}m)</span>
                         </div>
                         <div class="text-secondary">Type: <span class="badge bg-secondary">${s.impact_type}</span> | Causal Path: ${s.path}</div>
                         <div class="text-muted small mt-1">${s.message}</div>
@@ -793,3 +793,36 @@ function renderConflictTree(simData, isResolved = false) {
     container.innerHTML = svgHtml;
 }
 
+
+// --- Phase 2: Experimental Physics Engine ---
+async function runPhysicsSimulation() {
+    const logs = document.getElementById('physics-logs');
+    logs.innerText = "Initializing PINN constraints...\nOffloading Navier-Stokes tensors to Hexagon NPU...\n";
+    
+    try {
+        const response = await fetch('/api/physics/simulate', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+            logs.innerText += "Compute Target: " + data.data.compute_target + "\n";
+            logs.innerText += "Latency: " + data.data.latency_ms + " ms\n";
+            logs.innerText += "Field Stability: " + data.data.field_stability + "%\n";
+            
+            document.getElementById('gyro-pitch').innerText = "12.4° (Simulated)";
+            document.getElementById('gyro-roll').innerText = "-4.2° (Simulated)";
+            
+            // Draw mock particle field on canvas
+            const canvas = document.getElementById('physicsCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            for(let i=0; i<100; i++) {
+                ctx.beginPath();
+                ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*3, 0, Math.PI*2);
+                ctx.fillStyle = gba(0, 229, 255, );
+                ctx.fill();
+            }
+        }
+    } catch (e) {
+        logs.innerText += "Error connecting to physics engine.";
+    }
+}

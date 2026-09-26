@@ -1,6 +1,6 @@
-"""
+﻿"""
 SnapEdge AI Assistant - FastAPI Backend Server
-Snapdragon® AI Lab Build & Present Challenge
+SnapdragonÂ® AI Lab Build & Present Challenge
 """
 
 from datetime import datetime, timedelta
@@ -123,7 +123,7 @@ def get_status():
         "device_profile": "Snapdragon-Powered HP PC (HP OmniBook Series)",
         "active_provider": parser.provider,
         "is_npu_accelerated": parser.provider == "QNNExecutionProvider",
-        "npu_hardware": "Qualcomm® Hexagon™ NPU (45 TOPS)",
+        "npu_hardware": "QualcommÂ® Hexagonâ„¢ NPU (45 TOPS)",
         "privacy_mode": "100% On-Device Offline (Zero Cloud Data Leakage)",
         "offline_guarantee": True,
         "models_integrated": [
@@ -369,9 +369,18 @@ def apply_schedule_resolution(req: ApplyResolutionRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+from engine.physics_simulator import physics_engine
+
+@app.post("/api/physics/simulate")
+async def simulate_physics():
+    # Phase 2 Experimental: Anti-Gravity Physics Engine
+    result = physics_engine.solve_navier_stokes_tensor(intensity=1.0, hardware_mode="INT8")
+    return {"status": "success", "data": result}
+
 # Mount static frontend directory
 static_dir = os.path.join(os.path.dirname(__file__), "..", "static")
 if not os.path.exists(static_dir):
     os.makedirs(static_dir, exist_ok=True)
 
 app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+

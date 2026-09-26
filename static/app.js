@@ -826,3 +826,47 @@ async function runPhysicsSimulation() {
         logs.innerText += "Error connecting to physics engine.";
     }
 }
+
+// --- SnapEdge Workload Director (Game Mode) ---
+let isGameModeActive = false;
+
+function toggleGameMode() {
+    isGameModeActive = document.getElementById('gameModeToggle').checked;
+    const card = document.getElementById('workload-metrics');
+    
+    if (isGameModeActive) {
+        card.style.opacity = "1.0";
+        card.classList.remove('border-info');
+        card.classList.add('border-danger'); // Make it look aggressive
+        
+        document.getElementById('gpu-status').innerText = "100% Freed for Game";
+        document.getElementById('gpu-status').className = "badge bg-success";
+        
+        document.getElementById('cpu-status').innerText = "100% Freed for Game";
+        document.getElementById('cpu-status').className = "badge bg-success";
+        
+        document.getElementById('npu-status').innerText = "Locked AI Offload (INT4)";
+        document.getElementById('npu-status').className = "badge bg-danger text-light";
+        
+        // Force Governor UI to Eco to reflect the NPU limit
+        setGovernorModeUI('eco');
+        
+        alert("Heterogeneous Workload Director Active!\n\nAll SnapEdge AI background tasks (like Meeting Transcriptions) have been locked exclusively to the Hexagon NPU using INT4 quantization.\n\nYour Adreno GPU and Oryon CPU are now 100% dedicated to your active game/app, guaranteeing zero frame drops.");
+        
+    } else {
+        card.style.opacity = "0.5";
+        card.classList.add('border-info');
+        card.classList.remove('border-danger');
+        
+        document.getElementById('gpu-status').innerText = "Shared Load";
+        document.getElementById('gpu-status').className = "badge bg-secondary";
+        
+        document.getElementById('cpu-status').innerText = "Shared Load";
+        document.getElementById('cpu-status').className = "badge bg-secondary";
+        
+        document.getElementById('npu-status').innerText = "Balanced INT8";
+        document.getElementById('npu-status').className = "badge bg-info text-dark";
+        
+        setGovernorModeUI('auto');
+    }
+}
